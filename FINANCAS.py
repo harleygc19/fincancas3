@@ -3,7 +3,7 @@ import pandas as pd
 from openpyxl import load_workbook
 #mport tela1.tela1 as tela1
 
-st.set_page_config(page_title="Finanças HD",layout='wide',page_icon="Financas4.png")
+st.set_page_config(page_title="Finanças HD",layout='wide',page_icon="Logo1.jpg")
 
 df = pd.read_excel('Contas.xlsx')
 
@@ -31,8 +31,8 @@ def login_page():
     col1,col2,col3 = st.columns((0.5,1,0.5))
     with col2:
 
-         imagem1 = st.image('Financas4.png',use_column_width=True)
-         imagem1 = st.sidebar.image('Financas4.png',use_column_width=True)
+         imagem1 = st.image('Logo1.jpg',use_column_width=True)
+         imagem1 = st.sidebar.image('Logo1.jpg',use_column_width=True)
    
     username = st.sidebar.text_input('login')
     
