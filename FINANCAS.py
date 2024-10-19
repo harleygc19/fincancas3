@@ -3,7 +3,7 @@ import pandas as pd
 from openpyxl import load_workbook
 #mport tela1.tela1 as tela1
 
-st.set_page_config(page_title="Finanças HD",layout='wide',page_icon="Logo1.jpg")
+st.set_page_config(page_title="Finanças HD",layout='wide',page_icon="logo2.png")
 
 df = pd.read_excel('Contas.xlsx')
 
@@ -31,8 +31,8 @@ def login_page():
     col1,col2,col3 = st.columns((0.5,1,0.5))
     with col2:
 
-         imagem1 = st.image('Logo1.jpg',use_column_width=True)
-         imagem1 = st.sidebar.image('Logo1.jpg',use_column_width=True)
+         imagem1 = st.image('logo1.png',use_column_width=True)
+         imagem1 = st.sidebar.image('logo3.png',use_column_width=True)
    
     username = st.sidebar.text_input('login')
     
@@ -84,8 +84,16 @@ def formulario():
 
 def formulario_c_gastos():    
     lista_status = 'Pago','Pendente'
-    lista_categoria = 'Cartão de crédico','Saúde', 'Moradia', 'Lazer', 'Transporte', 'Alimentação', 'Telefonia', 'Educação', 'Outros'
-    lista_contas = 'Luz', 'Celular Harley', 'Fies', 'Celular Daiana', 'Cartão Bradesco', 'Cartão Nubank', 'Plano de saúde','Aluguel', 'Gás', 'Condomínio', 'Faculdade','Mercado', 'Internet', 'Academia Harley', 'Academia Daiana', 'Outros', 'Cartão Moises', 'Cartão Fábio','Açougue','IPTV'
+    
+    dfcat = pd.read_excel('nome_categorias.xlsx')
+    dfcat = dfcat[list]
+    
+    dfconta = pd.read_excel('nome_contas.xlsx')
+    dfconta = dfconta[list]
+    
+    lista_categoria = dfcat
+    #lista_contas = 'Luz', 'Celular Harley', 'Fies', 'Celular Daiana', 'Cartão Bradesco', 'Cartão Nubank', 'Plano de saúde','Aluguel', 'Gás', 'Condomínio', 'Faculdade','Mercado', 'Internet', 'Academia Harley', 'Academia Daiana', 'Outros', 'Cartão Moises', 'Cartão Fábio','Açougue','IPTV'
+    lista_contas = dfconta
     if ' Categoria' not in st.session_state:
         st.session_state['Categoria'] = ''
     if 'Conta' not in st.session_state:
@@ -112,7 +120,7 @@ def formulario_c_gastos():
 
 
 
-    if st.button('Cadastrar'):
+    if st.button('Cadastrar novo Gasto'):
         cadastrar1(
         st.session_state['Categoria'],
         st.session_state['Conta'],
@@ -155,12 +163,118 @@ def cadastrar1(Categoria, Conta, Data_vencimento,  Data_do_pagamento, Status_do_
 
 
 
-def tela_formulario():
-    
-    formulario_c_gastos()
-   
 
+
+
+def nova_categoria():
+
+    @st.dialog("Cadastrar nova Categoria", width="big")  
+    def cadastrar_categoria():
+        
+        if 'Nova_Categoria' not in st.session_state:
+            st.session_state['Nova_Categoria'] = ''
+        
+        st.session_state['Nova_Categoria'] = st.text_input('Nova categoria', st.session_state['Nova_Categoria'])
+        
+        if st.button("Enviar"):
+            cadastrar2(st.session_state['Nova_Categoria'])
+            st.success('Cadastro enviado com sucesso!')
+            st.rerun()  
+        
+        if st.button("Limpar"):
+            st.session_state['Nova_Categoria'] = ''
+            st.rerun()  
+   
+    if 'nova_categoria' not in st.session_state:
+        if st.button("Abrir Formulário de Categoria"):
+            cadastrar_categoria()  
+    else:
+        st.success("Categoria cadastrada com sucesso!")
+
+
+def cadastrar2(Nova_Categoria):
+
+    nova_linha2 = {'Nova_Categoria': Nova_Categoria}
+    df_nova_linha2 = pd.DataFrame([nova_linha2])
+    try:
+        wb = load_workbook (filename="nome_categorias.xlsx")
+    except FileNotFoundError:
+        df_nova_linha2.to_excel("nome_categorias.xlsx", index=False)
+        wb = load_workbook(filename="nome_categorias.xlsx")
+    ws = wb.active
+    proxima_linha = ws.max_row + 1
+
+    for index, row in df_nova_linha2.iterrows():
+        for col, value in enumerate(row, start=1):
+            ws.cell(row=proxima_linha, column=col, value=value)
+    proxima_linha += 1
+
+    wb.save(filename="nome_categorias.xlsx")
+    return df
+
+
+def Nova_conta():
     
+    # Controle do estado para abrir/fechar o formulário
+    if 'form_aberto' not in st.session_state:
+        st.session_state['form_aberto'] = False
+
+    # Função para o formulário de cadastro de contas
+    @st.dialog("Cadastrar nova conta", width="big")  
+    def cadastrar_conta():
+        
+        # Verificar se a variável Nova_conta está no estado da sessão
+        if 'Nova_conta' not in st.session_state:
+            st.session_state['Nova_conta'] = ''
+        
+        # Campo de texto para inserir uma nova conta
+        st.session_state['Nova_conta'] = st.text_input('Nova Conta', st.session_state['Nova_conta'])
+        
+        # Botão para enviar a nova conta
+        if st.button("Enviar"):
+            cadastrar3(st.session_state['Nova_conta'])
+            st.success('Cadastro enviado com sucesso!')
+            st.session_state['form_aberto'] = False  # Fechar o formulário
+            st.rerun()  # Recarregar para exibir o botão novamente
+
+        # Botão para limpar o formulário
+        if st.button("Limpar"):
+            st.session_state['Nova_conta'] = ''
+            st.session_state['form_aberto'] = False  # Fechar o formulário
+            st.rerun()  # Recarregar para exibir o botão novamente
+
+    # Condição para exibir o botão "Abrir Formulário Conta"
+    if not st.session_state['form_aberto']:
+        if st.button("Abrir Formulário Conta"):
+            st.session_state['form_aberto'] = True  # Abrir o formulário
+            cadastrar_conta()  # Exibir o formulário
+
+# Função que lida com o salvamento no arquivo Excel
+def cadastrar3(Nova_conta):
+    nova_linha3 = {'Nova_conta': Nova_conta}
+    df_nova_linha3 = pd.DataFrame([nova_linha3])
+
+    try:
+        wb = load_workbook(filename="nome_contas.xlsx")
+    except FileNotFoundError:
+        df_nova_linha3.to_excel("nome_contas.xlsx", index=False)
+        wb = load_workbook(filename="nome_contas.xlsx")
+
+    ws = wb.active
+    proxima_linha = ws.max_row + 1
+
+    for index, row in df_nova_linha3.iterrows():
+        for col, value in enumerate(row, start=1):
+            ws.cell(row=proxima_linha, column=col, value=value)
+
+    wb.save(filename="nome_contas.xlsx")
+
+# Função principal para exibir os formulários
+def tela_formulario():
+    formulario_c_gastos()  # Sua função de gastos
+    nova_categoria()  # Sua função de categorias
+    Nova_conta()  # A função de nova conta
+     
 
 def tela_tabela():
     df = pd.read_excel('Contas.xlsx') 
