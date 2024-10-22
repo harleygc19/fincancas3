@@ -294,7 +294,7 @@ def cadastrar3(Nova_conta):
 # Função principal para exibir os formulários
 def tela_formulario():
     
-    pos1, pos2, pos3 = st.columns(3)
+    pos1, pos2, pos3, pos4, pos5 = st.columns([1,4,5,5,5])
     with pos1:
         formulario_c_gastos1()  # Sua função de gastos
     with pos2:
