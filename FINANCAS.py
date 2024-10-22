@@ -82,55 +82,77 @@ def formulario():
     
     return df
 
-def formulario_c_gastos():    
-    lista_status = 'Pago','Pendente'
-    
-    dfcat = pd.read_excel('nome_categorias.xlsx')
-    dfcat = dfcat[list]
-    
-    dfconta = pd.read_excel('nome_contas.xlsx')
-    dfconta = dfconta[list]
-    
-    lista_categoria = dfcat
-    #lista_contas = 'Luz', 'Celular Harley', 'Fies', 'Celular Daiana', 'Cartão Bradesco', 'Cartão Nubank', 'Plano de saúde','Aluguel', 'Gás', 'Condomínio', 'Faculdade','Mercado', 'Internet', 'Academia Harley', 'Academia Daiana', 'Outros', 'Cartão Moises', 'Cartão Fábio','Açougue','IPTV'
-    lista_contas = dfconta
-    if ' Categoria' not in st.session_state:
-        st.session_state['Categoria'] = ''
-    if 'Conta' not in st.session_state:
-        st.session_state['Conta'] = ''
-    if ' Data vencimento' not in st.session_state:
-        st.session_state['Data_vencimento'] = ''
-    if 'Data do pagamento' not in st.session_state:
-        st.session_state['Data_do_pagamento'] = ''
-    if 'Status do pagamento' not in st.session_state:
-        st.session_state['Status_do_pagamento'] = ''
-    if 'Valor_pago' not in st.session_state:
-        st.session_state['Valor_pago'] = ''
-    if 'OBS' not in st.session_state:
-        st.session_state['OBS'] = ''
-    
-  
-    st.session_state['Categoria'] = st.selectbox('Categoria',lista_categoria)
-    st.session_state['Conta'] = st.selectbox('Conta', lista_contas)
-    st.session_state['Data_vencimento']=st.date_input('Data vencimento')
-    st.session_state['Data_do_pagamento']=st.date_input('Data do pagamento')
-    st.session_state['Status_do_pagamento'] = st.selectbox('Status do Pagamento',lista_status)
-    st.session_state['Valor_pago']=st.number_input('Valor pago')
-    st.session_state['OBS'] = st.text_input('OBS')
 
 
-
-    if st.button('Cadastrar novo Gasto'):
-        cadastrar1(
-        st.session_state['Categoria'],
-        st.session_state['Conta'],
-        st.session_state['Data_vencimento'],
-        st.session_state['Data_do_pagamento'],
-        st.session_state['Status_do_pagamento'],
-        st.session_state['Valor_pago'],
-        st.session_state['OBS'])
+def formulario_c_gastos1():
+    @st.dialog('Cadastrar nova conta',width='big')
+    def formulario_c_gastos():    
         
-        st.success('Cadastro enviado com sucesso!')
+        lista_status = 'Pago','Pendente'
+        
+        dfcat = pd.read_excel('nome_categorias.xlsx')
+        dfcat = dfcat[list]
+        
+        dfconta = pd.read_excel('nome_contas.xlsx')
+        dfconta = dfconta[list]
+        
+        lista_categoria = dfcat
+        lista_contas = dfconta
+
+
+        if ' Categoria' not in st.session_state:
+            st.session_state['Categoria'] = ''
+        if 'Conta' not in st.session_state:
+            st.session_state['Conta'] = ''
+        if ' Data vencimento' not in st.session_state:
+            st.session_state['Data_vencimento'] = ''
+        if 'Data do pagamento' not in st.session_state:
+            st.session_state['Data_do_pagamento'] = ''
+        if 'Status do pagamento' not in st.session_state:
+            st.session_state['Status_do_pagamento'] = ''
+        if 'Valor_pago' not in st.session_state:
+            st.session_state['Valor_pago'] = ''
+        if 'OBS' not in st.session_state:
+            st.session_state['OBS'] = ''
+        
+    
+        st.session_state['Categoria'] = st.selectbox('Categoria',lista_categoria)
+        st.session_state['Conta'] = st.selectbox('Conta', lista_contas)
+        st.session_state['Data_vencimento']=st.date_input('Data vencimento')
+        st.session_state['Data_do_pagamento']=st.date_input('Data do pagamento')
+        st.session_state['Status_do_pagamento'] = st.selectbox('Status do Pagamento',lista_status)
+        st.session_state['Valor_pago']=st.number_input('Valor pago')
+        st.session_state['OBS'] = st.text_input('OBS')
+
+
+
+        if st.button('Enviar'):
+            cadastrar1(
+            st.session_state['Categoria'],
+            st.session_state['Conta'],
+            st.session_state['Data_vencimento'],
+            st.session_state['Data_do_pagamento'],
+            st.session_state['Status_do_pagamento'],
+            st.session_state['Valor_pago'],
+            st.session_state['OBS'])
+            st.rerun()
+            
+            st.success('Cadastro enviado com sucesso!')
+        if st.button('Limpar'):
+            st.session_state['Categoria']=''
+            st.session_state['Conta']=''
+            st.session_state['Data_vencimento']=''
+            st.session_state['Data_do_pagamento']=''
+            st.session_state['Status_do_pagamento']=''
+            st.session_state['Valor_pago']=''
+            st.session_state['OBS']
+            st.rerun()
+
+    if 'Novo gasto' not in st.session_state:
+        if st.button('➕'):
+            formulario_c_gastos()
+    else:
+        st.success('Novo gasto enviado com sucesso')
         
         
 
@@ -271,9 +293,14 @@ def cadastrar3(Nova_conta):
 
 # Função principal para exibir os formulários
 def tela_formulario():
-    formulario_c_gastos()  # Sua função de gastos
-    nova_categoria()  # Sua função de categorias
-    Nova_conta()  # A função de nova conta
+    
+    pos1, pos2, pos3 = st.columns(3)
+    with pos1:
+        formulario_c_gastos1()  # Sua função de gastos
+    with pos2:
+        nova_categoria()  # Sua função de categorias
+    with pos3:
+        Nova_conta()  # A função de nova conta
      
 
 def tela_tabela():
