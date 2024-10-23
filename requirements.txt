@@ -1,2 +1,2 @@
 openpyxl
-matplotlib.pyplot
+matplotlib
