@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 from openpyxl import load_workbook
-#mport tela1.tela1 as tela1
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Finanças HD",layout='wide',page_icon="logo2.png")
 
@@ -291,6 +291,24 @@ def cadastrar3(Nova_conta):
 
     wb.save(filename="nome_contas.xlsx")
 
+
+def gráficos():
+    # Agrupar os dados pela categoria e somar os valores pagos
+    dados_agrupados = df.groupby('Categoria')['Valor Pago'].sum()
+    
+    # Exibir os dados agrupados na página Streamlit
+    #st.write(dados_agrupados)
+
+    # Criar o gráfico de pizza
+    fig, ax = plt.subplots()
+    ax.pie(dados_agrupados, labels=dados_agrupados.index, autopct='%1.1f%%', startangle=90)
+    
+    # Ajustar para que o gráfico seja circular
+    ax.axis('equal')  
+    
+    # Exibir o gráfico no Streamlit
+    st.pyplot(fig)
+
 # Função principal para exibir os formulários
 def tela_formulario():
     
@@ -306,7 +324,7 @@ def tela_formulario():
 def tela_tabela():
     df = pd.read_excel('Contas.xlsx') 
     st.dataframe(df,hide_index=True)
-
+    gráficos()
 
 
 
