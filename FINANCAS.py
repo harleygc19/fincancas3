@@ -306,7 +306,7 @@ def tela_formulario():
 
 def tela_tabela():
     df = pd.read_excel('Contas.xlsx') 
-    df = df.head(5)
+    df = df.head(10)
     st.dataframe(df,hide_index=True)
     #graficos()
 
