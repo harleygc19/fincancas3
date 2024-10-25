@@ -52,7 +52,7 @@ def pag_inicial():
     st.subheader('Controle Financeiro HD',divider='gray')
     pag1, pag2, pag3 = st.tabs(['Cadastro de Gastros','Cadastro de Recebimentos','Tabela'])
     with pag1:
-        
+        tela_tabela()
         tela_formulario()
 
     with pag2:
@@ -291,18 +291,10 @@ def cadastrar3(Nova_conta):
 
     wb.save(filename="nome_contas.xlsx")
 
-def graficos():
-    df_agrupado = df.groupby(['Categoria'])['Valor Pago'].agg('sum')
-    graf = px.pie(df, names= 'Categoria', values= 'Valor Pago', hole=0.6, width=700, height=500)
-    graf3 = px.pie(df, names= 'Conta', values= 'Valor Pago', hole=0.6, width=700, height=500)
-    graf2 = px.bar(df, x='Data do Pagamento', y= 'Valor Pago',width=700, height=500)
-    graf
-    graf3
-    graf2
+
 
 # Função principal para exibir os formulários
 def tela_formulario():
-    graficos()
     pos1, pos2, pos3, pos4, pos5 = st.columns([1,4,5,5,5])
     with pos1:
         formulario_c_gastos1()  # Sua função de gastos
@@ -314,6 +306,7 @@ def tela_formulario():
 
 def tela_tabela():
     df = pd.read_excel('Contas.xlsx') 
+    df = df.head(5)
     st.dataframe(df,hide_index=True)
     #graficos()
 
