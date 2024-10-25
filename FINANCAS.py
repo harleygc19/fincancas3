@@ -135,7 +135,7 @@ def formulario_c_gastos1():
             st.session_state['Status_do_pagamento'],
             st.session_state['Valor_pago'],
             st.session_state['OBS'])
-            st.rerun()
+            #st.rerun()
             
             st.success('Cadastro enviado com sucesso!')
         if st.button('Limpar'):
