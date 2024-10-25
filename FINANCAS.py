@@ -168,9 +168,7 @@ def cadastrar1(Categoria, Conta, Data_vencimento,  Data_do_pagamento, Status_do_
     df_nova_linha = pd.DataFrame([nova_linha])
     try:
         wb = load_workbook (filename="Contas.xlsx")
-        st.write('etapa1')
     except FileNotFoundError:
-        st.write('etapa 2')
         df_nova_linha.to_excel("Contas.xlsx", index=False)
         wb = load_workbook(filename="Contas.xlsx")
     ws = wb.active
