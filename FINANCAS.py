@@ -57,6 +57,7 @@ def pag_inicial():
 
     with pag2:
         st.write ('Cadastro de recebimentos')
+        recebimentos()
 
     with pag3:
         tela_tabela()
@@ -135,7 +136,7 @@ def formulario_c_gastos1():
             st.session_state['Status_do_pagamento'],
             st.session_state['Valor_pago'],
             st.session_state['OBS'])
-            #st.rerun()
+            st.rerun()
             
             st.success('Cadastro enviado com sucesso!')
         if st.button('Limpar'):
@@ -292,6 +293,76 @@ def cadastrar3(Nova_conta):
     wb.save(filename="nome_contas.xlsx")
 
 
+def recebimento():
+    
+    # Controle do estado para abrir/fechar o formulário
+    if 'form_aberto2' not in st.session_state:
+        st.session_state['form_aberto2'] = False
+
+    # Função para o formulário de cadastro de contas
+    @st.dialog("Cadastrar novo recebimento", width="big")  
+    def cadastrar_conta():
+        
+        lista_recebimento = 'Assim Saúde', 'Colegio QI', 'Pacto Proteção Veicular', 'Outro'
+
+        # Verificar se a variável Nova_conta está no estado da sessão
+        if 'Fonte_da_recebimento' not in st.session_state:
+            st.session_state['Fonte_da_recebimento'] = ''
+        if 'Valor_recebido' not in st.session_state:
+            st.session_state['Valor_recebido']=''
+        if 'Data_Recebimento' not in st.session_state:
+            st.session_state['Data_recebimento']=''
+
+        
+        # Campo de texto para inserir uma nova conta
+        st.session_state['Fonte_da_recebimento'] = st.selectbox('Fonte da recebimento',lista_recebimento)
+        st.session_state['Valor_recebido'] = st.number_input('Valor Recebido')
+        st.session_state['Data_recebimento'] = st.date_input('Data')
+        
+        # Botão para enviar a nova conta
+        if st.button("Enviar"):
+            cadastrar4(st.session_state['Fonte_da_recebimento'],
+                       st.session_state['Valor_recebido'],
+                       st.session_state['Data_recebimento'])
+            st.success('Cadastro enviado com sucesso!')
+            st.session_state['form_aberto'] = False  # Fechar o formulário
+            st.rerun()  # Recarregar para exibir o botão novamente
+
+        # Botão para limpar o formulário
+        if st.button("Limpar"):
+            st.session_state['Fonte_da_recebimento'] = ''
+            st.session_state['form_aberto'] = False  # Fechar o formulário
+            st.rerun()  # Recarregar para exibir o botão novamente
+
+    # Condição para exibir o botão "Abrir Formulário Conta"
+    if not st.session_state['form_aberto']:
+        if st.button("Abrir Formulário nova conta"):
+            st.session_state['form_aberto'] = True  # Abrir o formulário
+            cadastrar_conta()  # Exibir o formulário
+
+# Função que lida com o salvamento no arquivo Excel
+def cadastrar4(Fonte_da_recebimento,Valor_recebido,Data_recebimento):
+    nova_linha3 = {'Fonte_da_recebimento': Fonte_da_recebimento,
+                   'Valor_recebido': Valor_recebido,
+                   'Data_recebimento': Data_recebimento}
+    df_nova_linha3 = pd.DataFrame([nova_linha3])
+
+    try:
+        wb = load_workbook(filename="Recebimentos.xlsx")
+    except FileNotFoundError:
+        df_nova_linha3.to_excel("Recebimentos.xlsx", index=False)
+        wb = load_workbook(filename="Recebimentos.xlsx")
+
+    ws = wb.active
+    proxima_linha = ws.max_row + 1
+
+    for index, row in df_nova_linha3.iterrows():
+        for col, value in enumerate(row, start=1):
+            ws.cell(row=proxima_linha, column=col, value=value)
+
+    wb.save(filename="Recebimentos.xlsx")
+
+
 
 # Função principal para exibir os formulários
 def tela_formulario():
@@ -303,6 +374,11 @@ def tela_formulario():
     with pos3:
         Nova_conta()  # A função de nova conta
      
+
+def recebimentos():
+    df_recebimentos = pd.read_excel('Recebimentos.xlsx')
+    st.dataframe(df_recebimentos,hide_index=True)
+    recebimento()
 
 def tela_tabela():
     df = pd.read_excel('Contas.xlsx') 
