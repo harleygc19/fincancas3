@@ -3,10 +3,14 @@ import pandas as pd
 from openpyxl import load_workbook
 import plotly.express as px
 
-st.set_page_config(page_title="Finanças HD",layout='wide',page_icon="logo2.png")
+st.set_page_config(page_title="Finanças HD", layout='wide', page_icon="logo2.png")
 
+# Carregar o arquivo Contas.xlsx
 df = pd.read_excel('Contas.xlsx')
+#df['Data do pagamento'] = pd.to_datetime(df['Data do pagamento']).dt.strftime('%d/%m/%y')
 
+
+# Função para verificar credenciais
 def verificar_credenciais(username, senha):
     try:
         df = pd.read_excel('senhas.xlsx')
@@ -21,22 +25,26 @@ def verificar_credenciais(username, senha):
         return True
     return False
 
+# Função para formatar datas
+def formatar_datas(df):
+    colunas_de_data = ['Data_vencimento', 'Data_do_pagamento'] 
+    for coluna in colunas_de_data:
+        if coluna in df.columns:
+            df[coluna] = pd.to_datetime(df[coluna], errors='coerce').dt.strftime('%d/%m/%Y')
+    return df
 
+# Ajustando o DataFrame inicial para exibir datas no formato desejado
+df = formatar_datas(df)
 
-
-
-# Código para Página de login
+# Página de login
 def login_page():
-    
-    col1,col2,col3 = st.columns((0.5,1,0.5))
+    col1, col2, col3 = st.columns((0.5, 1, 0.5))
     with col2:
-
-         imagem1 = st.image('logo1.png',use_column_width=True)
-         imagem1 = st.sidebar.image('logo3.png',use_column_width=True)
-   
-    username = st.sidebar.text_input('login')
+        st.image('logo1.png', use_column_width=True)
+        st.sidebar.image('logo3.png', use_column_width=True)
     
-    senha = st.sidebar.text_input('senha',type='password')
+    username = st.sidebar.text_input('login')
+    senha = st.sidebar.text_input('senha', type='password')
 
     if st.sidebar.button('login'):
         if verificar_credenciais(username, senha):
@@ -47,45 +55,59 @@ def login_page():
             st.error('usuário ou senha incorretos, tente novamente')
     st.sidebar.text('Controle financeiro HD') 
 
-
+# Página Principal
 def pag_inicial():
-    st.subheader('Controle Financeiro HD',divider='gray')
-    pag1, pag2, pag3 = st.tabs(['Cadastro de Gastros','Cadastro de Recebimentos','Tabela'])
+    st.subheader('Controle Financeiro HD', divider='gray')
+    pag1, pag2 = st.tabs(['Cadastro de Gastos', 'Cadastro de Recebimentos'])
+
     with pag1:
-        tela_tabela()
-        tela_formulario()
+        col1, col2 = st.columns(2)
+        st.write(df)
+        formulario_c_gastos1()
+        nova_categoria()
+        Nova_conta()
 
     with pag2:
-        st.write ('Cadastro de recebimentos')
-        recebimentos()
+        df_recebimentos = pd.read_excel('Recebimentos.xlsx')
+        st.dataframe(formatar_datas(df_recebimentos), hide_index=True)
+        recebimento()
 
-    with pag3:
-        tela_tabela()
-
-
-
-df = pd.read_excel('Contas.xlsx')
-
-
+# Função para carregar e formatar o DataFrame
 def formulario():
-
     try:
         df = pd.read_excel('Contas.xlsx')
-        
-        # Convertendo as colunas de datas para o formato dd/mm/aa
-        colunas_de_data = ['Data_vencimento', 'Data_do_pagamento']  # Substitua pelos nomes corretos das suas colunas de data
-        
-        for coluna in colunas_de_data:
-            df[coluna] = pd.to_datetime(df['coluna'], errors='coerce').dt.strftime('%d/%m/%y')
-    
+        df = formatar_datas(df)
     except FileNotFoundError:
         df = pd.DataFrame(columns=['Categoria', 'Conta', 'Data_vencimento', 'Data_do_pagamento', 'Status_do_pagamento', 'Valor_pago', 'OBS'])
     
     return df
 
+# Página Principal
+def pag_inicial():
+    st.subheader('Controle Financeiro HD',divider='gray')
+    pag1, pag2 = st.tabs(['Cadastro de Gastos','Cadastro de Recebimentos'])
 
+    with pag1:
+        col1, col2 = st.columns(2)
+        
+
+        
+        st.dataframe(df)
+        formulario_c_gastos1()
+        nova_categoria()
+        Nova_conta()
+
+    with pag2:
+        df_recebimentos = pd.read_excel('Recebimentos.xlsx')
+        st.dataframe(df_recebimentos,hide_index=True)
+        recebimento()
+        pass 
+
+#Criando o Cadastro de gastos
+df = pd.read_excel('Contas.xlsx')
 
 def formulario_c_gastos1():
+    forma_de_pagamento_lista = 'Debito Harley','Debito Daiana','Credito Bradesco','Credito Nubank','Crédito Outros'
     @st.dialog('Cadastrar nova conta',width='big')
     def formulario_c_gastos():    
         
@@ -100,13 +122,12 @@ def formulario_c_gastos1():
         lista_categoria = dfcat
         lista_contas = dfconta
 
-
         if ' Categoria' not in st.session_state:
             st.session_state['Categoria'] = ''
         if 'Conta' not in st.session_state:
             st.session_state['Conta'] = ''
-        if ' Data vencimento' not in st.session_state:
-            st.session_state['Data_vencimento'] = ''
+        if ' Forma de Pagamento' not in st.session_state:
+            st.session_state['Forma_de_pagamento'] = ''
         if 'Data do pagamento' not in st.session_state:
             st.session_state['Data_do_pagamento'] = ''
         if 'Status do pagamento' not in st.session_state:
@@ -115,23 +136,20 @@ def formulario_c_gastos1():
             st.session_state['Valor_pago'] = ''
         if 'OBS' not in st.session_state:
             st.session_state['OBS'] = ''
-        
     
         st.session_state['Categoria'] = st.selectbox('Categoria',lista_categoria)
         st.session_state['Conta'] = st.selectbox('Conta', lista_contas)
-        st.session_state['Data_vencimento']=st.date_input('Data vencimento')
+        st.session_state['Forma_de_pagamento']=st.selectbox('Forma de pagamento',forma_de_pagamento_lista)
         st.session_state['Data_do_pagamento']=st.date_input('Data do pagamento')
         st.session_state['Status_do_pagamento'] = st.selectbox('Status do Pagamento',lista_status)
         st.session_state['Valor_pago']=st.number_input('Valor pago')
         st.session_state['OBS'] = st.text_input('OBS')
 
-
-
         if st.button('Enviar'):
             cadastrar1(
             st.session_state['Categoria'],
             st.session_state['Conta'],
-            st.session_state['Data_vencimento'],
+            st.session_state['Forma_de_pagamento'],
             st.session_state['Data_do_pagamento'],
             st.session_state['Status_do_pagamento'],
             st.session_state['Valor_pago'],
@@ -142,7 +160,7 @@ def formulario_c_gastos1():
         if st.button('Limpar'):
             st.session_state['Categoria']=''
             st.session_state['Conta']=''
-            st.session_state['Data_vencimento']=''
+            st.session_state['Forma_de_pagamento']=''
             st.session_state['Data_do_pagamento']=''
             st.session_state['Status_do_pagamento']=''
             st.session_state['Valor_pago']=''
@@ -154,14 +172,12 @@ def formulario_c_gastos1():
             formulario_c_gastos()
     else:
         st.success('Novo gasto enviado com sucesso')
-        
-        
 
-def cadastrar1(Categoria, Conta, Data_vencimento,  Data_do_pagamento, Status_do_pagamento, Valor_pago, OBS):
+def cadastrar1(Categoria, Conta, Forma_de_pagamento,  Data_do_pagamento, Status_do_pagamento, Valor_pago, OBS):
 
     nova_linha = {'Categoria': Categoria,
                   'Conta': Conta,
-                  'Data_vencimento': Data_vencimento,
+                  'Forma_de_pagamento': Forma_de_pagamento,
                   'Data_do_pagamento': Data_do_pagamento,
                   'Status_do_pagamento': Status_do_pagamento,
                   'Valor_pago': Valor_pago,
@@ -181,14 +197,8 @@ def cadastrar1(Categoria, Conta, Data_vencimento,  Data_do_pagamento, Status_do_
     proxima_linha += 1
 
     wb.save(filename="Contas.xlsx")
-    return df
 
-
-
-
-
-
-
+#Criando o Cadastro de nova categoria
 def nova_categoria():
 
     @st.dialog("Cadastrar nova Categoria", width="big")  
@@ -236,43 +246,37 @@ def cadastrar2(Nova_Categoria):
     return df
 
 
+#Criando o Cadastro de nova conta
 def Nova_conta():
     
-    # Controle do estado para abrir/fechar o formulário
     if 'form_aberto' not in st.session_state:
         st.session_state['form_aberto'] = False
 
-    # Função para o formulário de cadastro de contas
     @st.dialog("Cadastrar nova conta", width="big")  
     def cadastrar_conta():
         
-        # Verificar se a variável Nova_conta está no estado da sessão
         if 'Nova_conta' not in st.session_state:
             st.session_state['Nova_conta'] = ''
         
-        # Campo de texto para inserir uma nova conta
         st.session_state['Nova_conta'] = st.text_input('Nova Conta', st.session_state['Nova_conta'])
         
-        # Botão para enviar a nova conta
         if st.button("Enviar"):
             cadastrar3(st.session_state['Nova_conta'])
             st.success('Cadastro enviado com sucesso!')
-            st.session_state['form_aberto'] = False  # Fechar o formulário
-            st.rerun()  # Recarregar para exibir o botão novamente
+            st.session_state['form_aberto'] = False  
+            st.rerun()  
 
-        # Botão para limpar o formulário
         if st.button("Limpar"):
             st.session_state['Nova_conta'] = ''
-            st.session_state['form_aberto'] = False  # Fechar o formulário
-            st.rerun()  # Recarregar para exibir o botão novamente
+            st.session_state['form_aberto'] = False  
+            st.rerun()  
 
-    # Condição para exibir o botão "Abrir Formulário Conta"
     if not st.session_state['form_aberto']:
         if st.button("Abrir Formulário Conta"):
-            st.session_state['form_aberto'] = True  # Abrir o formulário
-            cadastrar_conta()  # Exibir o formulário
+            st.session_state['form_aberto'] = True  
+            cadastrar_conta()  
 
-# Função que lida com o salvamento no arquivo Excel
+
 def cadastrar3(Nova_conta):
     nova_linha3 = {'Nova_conta': Nova_conta}
     df_nova_linha3 = pd.DataFrame([nova_linha3])
@@ -293,19 +297,19 @@ def cadastrar3(Nova_conta):
     wb.save(filename="nome_contas.xlsx")
 
 
+#Criando o Cadastro de recebimentos
 def recebimento():
     
-    # Controle do estado para abrir/fechar o formulário
+    
     if 'form_aberto2' not in st.session_state:
         st.session_state['form_aberto2'] = False
 
-    # Função para o formulário de cadastro de contas
+    
     @st.dialog("Cadastrar novo recebimento", width="big")  
     def cadastrar_conta():
         
         lista_recebimento = 'Assim Saúde', 'Colegio QI', 'Pacto Proteção Veicular', 'Outro'
 
-        # Verificar se a variável Nova_conta está no estado da sessão
         if 'Fonte_da_recebimento' not in st.session_state:
             st.session_state['Fonte_da_recebimento'] = ''
         if 'Valor_recebido' not in st.session_state:
@@ -314,33 +318,29 @@ def recebimento():
             st.session_state['Data_recebimento']=''
 
         
-        # Campo de texto para inserir uma nova conta
         st.session_state['Fonte_da_recebimento'] = st.selectbox('Fonte da recebimento',lista_recebimento)
         st.session_state['Valor_recebido'] = st.number_input('Valor Recebido')
         st.session_state['Data_recebimento'] = st.date_input('Data')
         
-        # Botão para enviar a nova conta
         if st.button("Enviar"):
             cadastrar4(st.session_state['Fonte_da_recebimento'],
                        st.session_state['Valor_recebido'],
                        st.session_state['Data_recebimento'])
             st.success('Cadastro enviado com sucesso!')
-            st.session_state['form_aberto'] = False  # Fechar o formulário
-            st.rerun()  # Recarregar para exibir o botão novamente
+            st.session_state['form_aberto'] = False  
+            st.rerun()  
 
-        # Botão para limpar o formulário
         if st.button("Limpar"):
             st.session_state['Fonte_da_recebimento'] = ''
-            st.session_state['form_aberto'] = False  # Fechar o formulário
-            st.rerun()  # Recarregar para exibir o botão novamente
+            st.session_state['form_aberto'] = False  
+            st.rerun()  
 
-    # Condição para exibir o botão "Abrir Formulário Conta"
     if not st.session_state['form_aberto']:
         if st.button("Abrir Formulário nova conta"):
-            st.session_state['form_aberto'] = True  # Abrir o formulário
-            cadastrar_conta()  # Exibir o formulário
+            st.session_state['form_aberto'] = True  
+            cadastrar_conta()  
 
-# Função que lida com o salvamento no arquivo Excel
+
 def cadastrar4(Fonte_da_recebimento,Valor_recebido,Data_recebimento):
     nova_linha3 = {'Fonte_da_recebimento': Fonte_da_recebimento,
                    'Valor_recebido': Valor_recebido,
@@ -364,29 +364,6 @@ def cadastrar4(Fonte_da_recebimento,Valor_recebido,Data_recebimento):
 
 
 
-# Função principal para exibir os formulários
-def tela_formulario():
-    pos1, pos2, pos3, pos4, pos5 = st.columns([1,4,5,5,5])
-    with pos1:
-        formulario_c_gastos1()  # Sua função de gastos
-    with pos2:
-        nova_categoria()  # Sua função de categorias
-    with pos3:
-        Nova_conta()  # A função de nova conta
-     
-
-def recebimentos():
-    df_recebimentos = pd.read_excel('Recebimentos.xlsx')
-    st.dataframe(df_recebimentos,hide_index=True)
-    recebimento()
-
-def tela_tabela():
-    df = pd.read_excel('Contas.xlsx') 
-    df = df.head(10)
-    st.dataframe(df,hide_index=True)
-    #graficos()
-
-
 
 
 
@@ -403,4 +380,4 @@ def main():
         login_page()
 
 if __name__ == "__main__":
-    main()
+    main()    
