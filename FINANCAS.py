@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from openpyxl import load_workbook
 import plotly.express as px
+import datetime
 
 st.set_page_config(page_title="Finanças HD", layout='wide', page_icon="logo2.png")
 
@@ -75,27 +76,52 @@ def pag_inicial():
 # Função para carregar e formatar o DataFrame
 def formulario():
     try:
-        df = pd.read_excel('Contas.xlsx')
         df = formatar_datas(df)
+        df = pd.read_excel('Contas.xlsx')
+        
+        #df = formatar_datas(df)
     except FileNotFoundError:
-        df = pd.DataFrame(columns=['Categoria', 'Conta', 'Data_vencimento', 'Data_do_pagamento', 'Status_do_pagamento', 'Valor_pago', 'OBS'])
+        df = pd.DataFrame(columns=['Categoria', 'Conta', 'Forma_de_pagamento', 'Data_do_pagamento', 'Status_do_pagamento', 'Valor_pago', 'OBS'])
     
     return df
 
 # Página Principal
 def pag_inicial():
     st.subheader('Controle Financeiro HD',divider='gray')
+    df['Data do Pagamento'] = pd.to_datetime(df['Data do Pagamento'])
     pag1, pag2 = st.tabs(['Cadastro de Gastos','Cadastro de Recebimentos'])
 
     with pag1:
-        col1, col2 = st.columns(2)
-        
+        col1, col2,col3 = st.columns(3)
 
-        
-        st.dataframe(df)
-        formulario_c_gastos1()
-        nova_categoria()
-        Nova_conta()
+        with col2:
+            # Inputs de data
+            pos1,pos2 = st.columns(2)
+            with pos1:
+                start_date = st.date_input("Data de Início", datetime.date(2024, 11, 1), key='DataUniIni')
+            with pos2:
+                end_date = st.date_input("Data de Fim", datetime.date(2024, 12, 31), key='DataOperFim')
+
+            # Conversão para datetime (apenas uma vez)
+            start_date = pd.to_datetime(start_date)
+            end_date = pd.to_datetime(end_date)
+
+            # Verificação da validade do intervalo de datas
+            if start_date > end_date:
+                st.error("Data de Início não pode ser maior que a Data de Fim.")
+            else:
+                # Formatação da coluna 'Data do pagamento' como datetime para realizar o filtro
+                df['Data do Pagamento'] = pd.to_datetime(df['Data do Pagamento'], errors='coerce')
+                
+                # Filtrando o DataFrame pelo intervalo de datas selecionado
+                df_filtered = df[(df['Data do Pagamento'] >= start_date) & (df['Data do Pagamento'] <= end_date)]
+                
+                # Exibindo o DataFrame filtrado
+                st.write(df_filtered,hide_index=True)
+
+            formulario_c_gastos1()
+            nova_categoria()
+            Nova_conta()
 
     with pag2:
         df_recebimentos = pd.read_excel('Recebimentos.xlsx')
