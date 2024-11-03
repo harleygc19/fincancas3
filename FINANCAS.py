@@ -116,11 +116,8 @@ def pag_inicial():
                 # Filtrando o DataFrame pelo intervalo de datas selecionado
                 df_filtered = df[(df['Data do Pagamento'] >= start_date) & (df['Data do Pagamento'] <= end_date)]
                 
-                # Exibindo o DataFrame filtrado
-                #group_id_loja = df.groupby(['ID Loja'])['Valor Final'].agg(['sum'])
                 df_agrupado = df_filtered.groupby(['Categoria'])['Valor Pago'].agg(['sum'])  
                 graf_bar = px.bar(df_filtered,x='Categoria',y='Valor Pago')
-                #fig_barras = px.bar(df, x='Data', y='Quantidade')
                 graf_bar
                 #st.dataframe (df_agrupado)
                 st.dataframe(df_filtered,hide_index=True)
@@ -139,7 +136,7 @@ def pag_inicial():
 df = pd.read_excel('Contas.xlsx')
 
 def formulario_c_gastos1():
-    forma_de_pagamento_lista = 'Debito Harley','Debito Daiana','Credito Bradesco','Credito Nubank','Crédito Outros'
+    forma_de_pagamento_lista = 'Debito Harley','Debito Daiana','Credito Bradesco','Credito Nubank','Crédito Outros', 'Tiket Alimentação', 'Tikect Refeição'
     @st.dialog('Cadastrar nova conta',width='big')
     def formulario_c_gastos():    
         
