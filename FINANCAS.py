@@ -118,9 +118,11 @@ def pag_inicial():
                 
                 df_agrupado = df_filtered.groupby(['Categoria'])['Valor Pago'].agg(['sum'])  
                 graf_bar = px.bar(df_filtered,x='Categoria',y='Valor Pago')
+                graf_bar.update_layout(width=500,height=300)
                 graf_bar
                 #st.dataframe (df_agrupado)
                 st.dataframe(df_filtered,hide_index=True)
+                        #fig.update_layout(width=1500, height=500)
 
             formulario_c_gastos1()
             nova_categoria()
