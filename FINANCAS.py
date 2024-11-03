@@ -117,7 +117,13 @@ def pag_inicial():
                 df_filtered = df[(df['Data do Pagamento'] >= start_date) & (df['Data do Pagamento'] <= end_date)]
                 
                 # Exibindo o DataFrame filtrado
-                st.write(df_filtered,hide_index=True)
+                #group_id_loja = df.groupby(['ID Loja'])['Valor Final'].agg(['sum'])
+                df_agrupado = df_filtered.groupby(['Categoria'])['Valor Pago'].agg(['sum'])  
+                graf_bar = px.bar(df_filtered,x='Categoria',y='Valor Pago')
+                #fig_barras = px.bar(df, x='Data', y='Quantidade')
+                graf_bar
+                #st.dataframe (df_agrupado)
+                st.dataframe(df_filtered,hide_index=True)
 
             formulario_c_gastos1()
             nova_categoria()
